@@ -7,6 +7,7 @@ import {
   getDoc,
   updateDoc,
   doc,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 import { format } from 'date-fns';
@@ -14,14 +15,16 @@ import { es } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { showAlert } from '../../utils/alerts';
+import { orderBy } from 'firebase/firestore';
 
 export default function HistorialFiltradoAdmin() {
   const [traslados, setTraslados] = useState([]);
   const [centros, setCentros] = useState([]);
+  const [encargadoFiltro, setEncargadoFiltro] = useState('');
+  const [encargados, setEncargados] = useState([]);
 
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [centroOrigen, setCentroOrigen] = useState('');
   const [centroDestino, setCentroDestino] = useState('');
   const [conCita, setConCita] = useState('');
   const [atipico, setAtipico] = useState('');
@@ -37,6 +40,15 @@ export default function HistorialFiltradoAdmin() {
       showAlert('Error al actualizar', error.message, 'error');
     }
   };
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const lista = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((u) => u.role === 'Encargado');
+      setEncargados(lista);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchCentros = async () => {
@@ -59,25 +71,24 @@ export default function HistorialFiltradoAdmin() {
         fin.setHours(23, 59, 59, 999);
         filtros.push(where('createdAt', '<=', fin));
       }
-      if (centroOrigen) filtros.push(where('centroOrigen', '==', centroOrigen));
+      if (encargadoFiltro) filtros.push(where('encargado', '==', encargadoFiltro));
       if (centroDestino) filtros.push(where('centroDestino', '==', centroDestino));
       if (conCita !== '') filtros.push(where('conCita', '==', conCita === 'true'));
       if (atipico !== '') filtros.push(where('atipico', '==', atipico === 'true'));
 
-      const q = query(collection(db, 'traslados'), ...filtros);
+      const q = query(
+        collection(db, 'traslados'),
+        ...filtros,
+        orderBy('createdAt', 'desc')
+      );
       const snapshot = await getDocs(q);
 
       const lista = await Promise.all(
         snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
           const fecha = data.createdAt?.toDate?.();
-          let origen = '—';
+          const encargado = data.encargado || '—';
           let destino = '—';
-
-          if (data.centroOrigen) {
-            const docRef = await getDoc(doc(db, 'centros', data.centroOrigen));
-            if (docRef.exists()) origen = docRef.data().nombre;
-          }
 
           if (data.centroDestino) {
             const docRef = await getDoc(doc(db, 'centros', data.centroDestino));
@@ -90,7 +101,7 @@ export default function HistorialFiltradoAdmin() {
             observaciones: data.observaciones || '',
             fecha: fecha ? format(fecha, "dd/MM/yyyy HH:mm", { locale: es }) : '—',
             leido: data.leido || false,
-            centroOrigen: origen,
+            encargado,
             centroDestino: destino,
           };
         })
@@ -98,15 +109,17 @@ export default function HistorialFiltradoAdmin() {
 
       setTraslados(lista);
     } catch (error) {
+      console.error('Error al filtrar:', error);
       showAlert('Error al filtrar', error.message, 'error');
     }
+
   };
 
   const handleExportarExcel = () => {
     const hoja = traslados.map((t) => ({
       Fecha: t.fecha,
       Placa: t.placa,
-      'Centro origen': t.centroOrigen,
+      Encargado: t.encargado,
       'Centro destino': t.centroDestino,
       Observaciones: t.observaciones,
     }));
@@ -135,14 +148,19 @@ export default function HistorialFiltradoAdmin() {
           <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-800" />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm text-gray-600 mb-1">Centro origen</label>
-          <select value={centroOrigen} onChange={(e) => setCentroOrigen(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-800">
+          <label className="text-sm text-gray-600 mb-1">Encargado</label>
+          <select
+            value={encargadoFiltro}
+            onChange={(e) => setEncargadoFiltro(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-800"
+          >
             <option value="">Todos</option>
-            {centros.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
+            {encargados.map((u) => (
+              <option key={u.id} value={u.nombre}>{u.nombre}</option>
             ))}
           </select>
         </div>
+
         <div className="flex flex-col">
           <label className="text-sm text-gray-600 mb-1">Centro destino</label>
           <select value={centroDestino} onChange={(e) => setCentroDestino(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-800">
@@ -170,7 +188,6 @@ export default function HistorialFiltradoAdmin() {
         </div>
       </div>
 
-      {/* Botones */}
       <div className="flex flex-wrap gap-4 justify-center mb-8">
         <button onClick={handleFiltrar} className="px-5 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition duration-200">
           Filtrar
@@ -187,7 +204,7 @@ export default function HistorialFiltradoAdmin() {
             <tr>
               <th className="px-4 py-3">Fecha</th>
               <th className="px-4 py-3">Placa</th>
-              <th className="px-4 py-3">Centro origen</th>
+              <th className="px-4 py-3">Encargado</th>
               <th className="px-4 py-3">Centro destino</th>
               <th className="px-4 py-3">Observaciones</th>
               <th className="px-4 py-3 text-center">Estatus</th>
@@ -203,7 +220,7 @@ export default function HistorialFiltradoAdmin() {
                 <tr key={t.id} className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2">{t.fecha}</td>
                   <td className="px-4 py-2 font-medium">{t.placa}</td>
-                  <td className="px-4 py-2">{t.centroOrigen}</td>
+                  <td className="px-4 py-2">{t.encargado}</td>
                   <td className="px-4 py-2">{t.centroDestino}</td>
                   <td className="px-4 py-2">{t.observaciones}</td>
                   <td className="px-4 py-2 text-center">

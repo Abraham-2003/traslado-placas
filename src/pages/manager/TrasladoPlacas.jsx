@@ -33,13 +33,13 @@ export default function TrasladoPlacas() {
     try {
       await addDoc(collection(db, 'traslados'), {
         placa,
-        centroOrigen: user?.centroId || null,
+        encargado: user?.nombre || '—',
         centroDestino,
         conCita,
         atipico,
         createdAt: serverTimestamp(),
-        leido: false, 
       });
+
       showAlert('Traslado registrado', 'El formulario fue enviado correctamente', 'success');
       setPlaca('');
       setCentroDestino('');

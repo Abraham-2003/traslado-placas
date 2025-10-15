@@ -59,12 +59,6 @@ export default function Login() {
           Iniciar sesión
         </button>
       </form>
-      <p className="text-center text-xs text-gray-500 mt-6">
-        ¿Olvidaste tu contraseña?{' '}
-        <span className="text-gray-700 hover:underline cursor-pointer">
-          Recuperar acceso
-        </span>
-      </p>
     </div>
   </div>
 );

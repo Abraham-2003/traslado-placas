@@ -19,8 +19,8 @@ function App() {
 
   const RedirectByRole = () => {
     if (user?.role === 'admin') return <Navigate to="/admin" />;
-    if (user?.role === 'gerente') return <Navigate to="/gerente" />;
-    if (auth.currentUser) return null; // 👈 espera a que el contexto se sincronice
+    if (user?.role === 'Encargado') return <Navigate to="/Encargado" />;
+    if (auth.currentUser) return null; 
     return <Navigate to="/login" />;
   };
 
@@ -31,8 +31,8 @@ function App() {
       {user?.role === 'admin' && (
         <Route path="/admin/*" element={<AdminRoutes />} />
       )}
-      {user?.role === 'gerente' && (
-        <Route path="/gerente/*" element={<ManagerRoutes />} />
+      {user?.role === 'Encargado' && (
+        <Route path="/Encargado/*" element={<ManagerRoutes />} />
       )}
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>

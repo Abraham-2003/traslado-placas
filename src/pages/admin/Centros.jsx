@@ -16,7 +16,7 @@ export default function Centros() {
     const [modalOpen, setModalOpen] = useState(false);
     const [nombre, setNombre] = useState('');
     const [encargadoId, setEncargadoId] = useState('');
-    const [gerentes, setGerentes] = useState([]);
+    const [encargados, setEncargados] = useState([]);
     const [editMode, setEditMode] = useState(false);
     const [centroId, setCentroId] = useState('');
 
@@ -24,8 +24,8 @@ export default function Centros() {
         const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
             const lista = snapshot.docs
                 .map((doc) => ({ id: doc.id, ...doc.data() }))
-                .filter((u) => u.role === 'gerente');
-            setGerentes(lista);
+                .filter((u) => u.role === 'Encargado');
+            setEncargados(lista);
         });
         return () => unsubscribe();
     }, []);
@@ -56,6 +56,7 @@ export default function Centros() {
                         id: docSnap.id,
                         nombre: data.nombre,
                         encargadoId: data.encargadoId,
+                        encargado: encargadoNombre,
                     };
                 })
             );
@@ -70,18 +71,12 @@ export default function Centros() {
             const centroRef = doc(collection(db, 'centros'));
             await setDoc(centroRef, {
                 nombre,
-                encargadoId,
                 createdAt: serverTimestamp(),
-            });
-
-            await updateDoc(doc(db, 'users', encargadoId), {
-                centroId: centroRef.id,
             });
 
             showAlert('Centro creado', 'El centro fue registrado correctamente', 'success');
             setModalOpen(false);
             setNombre('');
-            setEncargadoId('');
         } catch (error) {
             showAlert('Error al crear centro', error.message, 'error');
         }
@@ -103,7 +98,6 @@ export default function Centros() {
             setModalOpen(false);
             setEditMode(false);
             setNombre('');
-            setEncargadoId('');
             setCentroId('');
         } catch (error) {
             showAlert('Error al editar centro', error.message, 'error');
@@ -124,10 +118,9 @@ export default function Centros() {
                 <button
                     onClick={() => {
                         setModalOpen(true);
-                        setEditMode(false);         // ← asegúrate de salir del modo edición
-                        setNombre('');              // ← limpia el nombre
-                        setEncargadoId('');         // ← limpia el encargado
-                        setCentroId('');            // ← limpia el ID
+                        setEditMode(false);
+                        setNombre('');
+                        setCentroId('');
                     }}
                     className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition"
                 >
@@ -140,7 +133,6 @@ export default function Centros() {
                     <thead className="bg-gray-100 text-left">
                         <tr>
                             <th className="px-4 py-2">Nombre del centro</th>
-                            <th className="px-4 py-2">Encargado</th>
                             <th className="px-4 py-2">Acciones</th>
                         </tr>
 
@@ -149,7 +141,6 @@ export default function Centros() {
                         {centros.map((c) => (
                             <tr key={c.id} className="border-t">
                                 <td className="px-4 py-2">{c.nombre}</td>
-                                <td className="px-4 py-2">{c.encargado}</td>
                                 <td className="px-4 py-2 space-x-2">
                                     <button
                                         onClick={() => openEditModal(c)}
@@ -185,19 +176,7 @@ export default function Centros() {
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500"
                                 required
                             />
-                            <select
-                                value={encargadoId}
-                                onChange={(e) => setEncargadoId(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500"
-                                required
-                            >
-                                <option value="">Selecciona encargado</option>
-                                {gerentes.map((g) => (
-                                    <option key={g.id} value={g.id}>
-                                        {g.nombre} ({g.email})
-                                    </option>
-                                ))}
-                            </select>
+                            
                             <div className="flex justify-end space-x-3 pt-2">
                                 <button
                                     type="button"

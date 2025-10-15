@@ -198,7 +198,7 @@ export default function Usuarios() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500"
               >
                 <option value="admin">Administrador</option>
-                <option value="gerente">Gerente</option>
+                <option value="Encargado">Encargado</option>
               </select>
               <div className="flex justify-end space-x-3 pt-2">
                 <button

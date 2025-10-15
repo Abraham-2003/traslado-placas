@@ -34,14 +34,14 @@ export default function Dashboard() {
   const totalPaginas = Math.ceil(traslados.length / trasladosPorPagina);
 
   const fetchTraslados = async () => {
-    if (!user?.centroId) return;
+    if (!user?.nombre) return;
 
-    setLoading(true);
     const q = query(
       collection(db, 'traslados'),
-      where('centroOrigen', '==', user.centroId),
+      where('encargado', '==', user.nombre),
       orderBy('createdAt', 'desc')
     );
+
 
     const snapshot = await getDocs(q);
     const lista = await Promise.all(
@@ -69,12 +69,13 @@ export default function Dashboard() {
     );
 
     setTraslados(lista);
-    setPaginaActual(1); // 👈 reinicia la paginación
+    setPaginaActual(1);
     setLoading(false);
   };
   useEffect(() => {
     fetchTraslados();
-  }, [user?.centroId]);
+  }, [user?.nombre]);
+
   const handleObservacionChange = (id, value) => {
     setTraslados((prev) =>
       prev.map((t) => (t.id === id ? { ...t, observaciones: value } : t))

@@ -14,7 +14,7 @@ export default function NavbarGerente() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md flex justify-around py-2 z-50">
       <NavLink
-        to="/gerente"
+        to="/Encargado"
         className={({ isActive }) =>
           `flex flex-col items-center text-xs ${
             isActive ? 'text-gray-800 font-semibold' : 'text-gray-500'
@@ -26,7 +26,7 @@ export default function NavbarGerente() {
       </NavLink>
 
       <NavLink
-        to="/gerente/Formulario"
+        to="/Encargado/Formulario"
         className={({ isActive }) =>
           `flex flex-col items-center text-xs ${
             isActive ? 'text-gray-800 font-semibold' : 'text-gray-500'

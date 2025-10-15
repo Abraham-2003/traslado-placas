@@ -38,13 +38,10 @@ export default function HistorialAdmin() {
       snapshot.docs.map(async (docSnap) => {
         const data = docSnap.data();
         const fecha = data.createdAt?.toDate?.();
-        let centroOrigen = '—';
-        let centroDestino = '—';
 
-        if (data.centroOrigen) {
-          const origenDoc = await getDoc(doc(db, 'centros', data.centroOrigen));
-          if (origenDoc.exists()) centroOrigen = origenDoc.data().nombre;
-        }
+        let centroDestino = '—';
+        const encargado = data.encargado || '—';
+
 
         if (data.centroDestino) {
           const destinoDoc = await getDoc(doc(db, 'centros', data.centroDestino));
@@ -56,7 +53,7 @@ export default function HistorialAdmin() {
           placa: data.placa || '—',
           observaciones: data.observaciones || '',
           fecha: fecha ? format(fecha, "dd/MM/yyyy HH:mm", { locale: es }) : '—',
-          centroOrigen,
+          encargado,
           centroDestino,
         };
       })
@@ -136,7 +133,7 @@ export default function HistorialAdmin() {
         <table className="min-w-full text-sm text-gray-700">
           <thead className="bg-gray-100 text-left">
             <tr>
-              <th className="px-4 py-2">Centro origen</th>
+              <th className="px-4 py-2">Encargado</th>
               <th className="px-4 py-2">Centro destino</th>
               <th className="px-4 py-2">Placa</th>
               <th className="px-4 py-2">Fecha</th>
@@ -146,7 +143,7 @@ export default function HistorialAdmin() {
           <tbody>
             {traslados.map((t) => (
               <tr key={t.id} className="border-t">
-                <td className="px-4 py-2">{t.centroOrigen}</td>
+                <td className="px-4 py-2">{t.encargado}</td>
                 <td className="px-4 py-2">{t.centroDestino}</td>
                 <td className="px-4 py-2">{t.placa}</td>
                 <td className="px-4 py-2">{t.fecha}</td>
