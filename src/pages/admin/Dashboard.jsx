@@ -22,7 +22,6 @@ export default function HistorialFiltradoAdmin() {
   const [centros, setCentros] = useState([]);
   const [encargadoFiltro, setEncargadoFiltro] = useState('');
   const [encargados, setEncargados] = useState([]);
-
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [centroDestino, setCentroDestino] = useState('');
@@ -103,7 +102,10 @@ export default function HistorialFiltradoAdmin() {
             leido: data.leido || false,
             encargado,
             centroDestino: destino,
+            conCita: data.conCita || false,
+            atipico: data.atipico || false,
           };
+
         })
       );
 
@@ -121,6 +123,8 @@ export default function HistorialFiltradoAdmin() {
       Placa: t.placa,
       Encargado: t.encargado,
       'Centro destino': t.centroDestino,
+      Cita: t.conCita,
+      Atipico: t.atipico,
       Observaciones: t.observaciones,
     }));
 
@@ -206,6 +210,8 @@ export default function HistorialFiltradoAdmin() {
               <th className="px-4 py-3">Placa</th>
               <th className="px-4 py-3">Encargado</th>
               <th className="px-4 py-3">Centro destino</th>
+              <th className="px-4 py-3 text-center">Cita</th>
+              <th className="px-4 py-3 text-center">Atípico</th>
               <th className="px-4 py-3">Observaciones</th>
               <th className="px-4 py-3 text-center">Estatus</th>
             </tr>
@@ -222,6 +228,8 @@ export default function HistorialFiltradoAdmin() {
                   <td className="px-4 py-2 font-medium">{t.placa}</td>
                   <td className="px-4 py-2">{t.encargado}</td>
                   <td className="px-4 py-2">{t.centroDestino}</td>
+                  <td className="px-4 py-2 text-center">{t.conCita ? 'Sí' : 'No'}</td>
+                  <td className="px-4 py-2 text-center">{t.atipico ? 'Sí' : 'No'}</td>
                   <td className="px-4 py-2">{t.observaciones}</td>
                   <td className="px-4 py-2 text-center">
                     <button
