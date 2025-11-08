@@ -27,7 +27,7 @@ export default function Dashboard() {
   const [trasladoActivo, setTrasladoActivo] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
 
-  const trasladosPorPagina = 5;
+  const trasladosPorPagina = 10;
   const indexUltimo = paginaActual * trasladosPorPagina;
   const indexPrimero = indexUltimo - trasladosPorPagina;
   const trasladosPaginados = traslados.slice(indexPrimero, indexUltimo);
@@ -93,11 +93,15 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 pb-24 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Mis traslados</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Mis traslados</h2>
+      <p className="text-sm text-gray-600 text-center mb-6">
+        Total de registros: <span className="font-semibold text-gray-800">{trasladosPaginados.length}</span>
+      </p>
       <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-sm">
         <table className="min-w-full text-sm text-gray-700">
           <thead className="bg-gray-100 text-left text-gray-600 uppercase tracking-wide text-xs">
             <tr>
+              <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Placa</th>
               <th className="px-4 py-3">Observaciones</th>
             </tr>
@@ -108,7 +112,7 @@ export default function Dashboard() {
                 <td colSpan="2" className="px-4 py-6 text-center text-gray-500">No se encontraron traslados</td>
               </tr>
             ) : (
-              trasladosPaginados.map((t) => (
+              trasladosPaginados.map((t, index) => (
                 <tr
                   key={t.id}
                   onClick={() => {
@@ -118,6 +122,7 @@ export default function Dashboard() {
                   className={`cursor-pointer border-t transition ${t.leido ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50'
                     }`}
                 >
+                  <td className="px-4 py-2 text-sm text-gray-600">{index + 1}</td> 
                   <td className="px-4 py-2 font-medium">{t.placa}</td>
                   <td className="px-4 py-2">
                     <div className="flex flex-col gap-2">
@@ -148,6 +153,7 @@ export default function Dashboard() {
                   </td>
                 </tr>
               ))
+
             )}
           </tbody>
         </table>

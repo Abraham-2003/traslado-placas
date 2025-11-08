@@ -15,6 +15,7 @@ import { db } from '../../firebase/firebase';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showAlert } from '../../utils/alerts';
+import { getStorage, ref, deleteObject } from 'firebase/storage';
 
 export default function HistorialAdmin() {
   const [traslados, setTraslados] = useState([]);
@@ -88,7 +89,33 @@ export default function HistorialAdmin() {
       );
 
       const snapshot = await getDocs(q);
-      const batch = snapshot.docs.map((doc) => deleteDoc(doc.ref));
+      const storage = getStorage();
+
+      const batch = snapshot.docs.map(async (docSnap) => {
+        const data = docSnap.data();
+        const trasladoRef = docSnap.ref;
+
+        // Extraer ruta desde imagenUrl
+        if (data.imagenUrl) {
+          const decodedUrl = decodeURIComponent(data.imagenUrl);
+          const match = decodedUrl.match(/\/o\/(.+)\?alt=media/);
+          const path = match?.[1];
+
+          if (path) {
+            const imageRef = ref(storage, path);
+            try {
+              await deleteObject(imageRef);
+              console.log(`Imagen eliminada: ${path}`);
+            } catch (err) {
+              console.warn(`No se pudo eliminar la imagen: ${path}`, err);
+            }
+          }
+        }
+
+        // Eliminar documento
+        await deleteDoc(trasladoRef);
+      });
+
       await Promise.all(batch);
 
       showAlert('Registros eliminados', `Se eliminaron ${snapshot.size} traslados`, 'success');
@@ -96,6 +123,7 @@ export default function HistorialAdmin() {
       setLastDoc(null);
       fetchTraslados(true); // recarga limpia
     } catch (error) {
+      console.error('Error completo:', error);
       showAlert('Error al eliminar', error.message, 'error');
     }
   };
